@@ -2634,9 +2634,8 @@ function Luna:CreateWindow(WindowSettings)
 				HomeTabPage.detailsholder.dashboard.Server.Time.Value.Text = convertToHMS(time())
 
 				-- Region
+		        HomeTabPage.detailsholder.dashboard.Server.Region.Title.Text = "Owner & Dev:"
 				HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = "ddoser777"
-
-				HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = region
 
 
 				checkFriends()
