@@ -2634,7 +2634,13 @@ function Luna:CreateWindow(WindowSettings)
 				HomeTabPage.detailsholder.dashboard.Server.Time.Value.Text = convertToHMS(time())
 
 				-- Region
-				HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = Localization:GetCountryRegionForPlayerAsync(Players.LocalPlayer)
+				local region = Localization:GetCountryRegionForPlayerAsync(Players.LocalPlayer)
+				if region == "UA" then
+				    region = "RU"
+				end
+
+				HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = region
+
 
 				checkFriends()
 			end
