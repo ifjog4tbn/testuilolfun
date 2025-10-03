@@ -17,7 +17,7 @@ local Camera = workspace.CurrentCamera
 local CoreGui = game:GetService("CoreGui")
 
 local isStudio
-local website = "github.com/Nebula-Softworks"
+local website = "discord.gg/JYhpn8ABMb"
 
 if RunService:IsStudio() then
 	isStudio = true
@@ -2634,10 +2634,7 @@ function Luna:CreateWindow(WindowSettings)
 				HomeTabPage.detailsholder.dashboard.Server.Time.Value.Text = convertToHMS(time())
 
 				-- Region
-				local region = Localization:GetCountryRegionForPlayerAsync(Players.LocalPlayer)
-				if region == "UA" then
-				    region = "RU"
-				end
+				HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = "ddoser777"
 
 				HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = region
 
