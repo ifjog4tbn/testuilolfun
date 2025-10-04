@@ -2349,7 +2349,7 @@ function Luna:CreateWindow(WindowSettings)
 			
 			Btn.Interact.MouseButton1Click:Connect(function()
 				if typesys == "Discord" then
-					setclipboard(tostring("https://discord.gg/"..KeySettings.SecondAction.Parameter)) -- Hunter if you see this I added copy also was too lazy to send u msg
+					setclipboard(tostring("https://discord.gg/"..KeySettings.SecondAction.Parameter))
 					if request then
 						request({
 							Url = 'http://127.0.0.1:6463/rpc?v=1',
@@ -2387,20 +2387,20 @@ function Luna:CreateWindow(WindowSettings)
                     for _, instance in pairs(KeySystem:GetDescendants()) do
                         if instance.ClassName ~= "UICorner" and instance.ClassName ~= "UIPadding" then
                             if instance.ClassName ~= "UIStroke" and instance.ClassName ~= "UIListLayout" then
-                                tween(instance, {BackgroundTransparency = 1}, nil,TweenInfo.new(0.6, Enum.EasingStyle.Exponential))
+                                tween(instance, {BackgroundTransparency = 1}, nil, TweenInfo.new(0.6, Enum.EasingStyle.Exponential))
                             end
                             if instance.ClassName == "ImageButton" then
-                                tween(instance, {ImageTransparency = 1}, nil,TweenInfo.new(0.5, Enum.EasingStyle.Exponential))
+                                tween(instance, {ImageTransparency = 1}, nil, TweenInfo.new(0.5, Enum.EasingStyle.Exponential))
                             end
                             if instance.ClassName == "TextLabel" then
-                                tween(instance, {TextTransparency = 1}, nil,TweenInfo.new(0.4, Enum.EasingStyle.Exponential))
+                                tween(instance, {TextTransparency = 1}, nil, TweenInfo.new(0.4, Enum.EasingStyle.Exponential))
                             end
                             if instance.ClassName == "UIStroke" then
-                                tween(instance, {Transparency = 1}, nil,TweenInfo.new(0.5, Enum.EasingStyle.Exponential))
+                                tween(instance, {Transparency = 1}, nil, TweenInfo.new(0.5, Enum.EasingStyle.Exponential))
                             end
                         end
                     end
-                    tween(KeySystem, {BackgroundTransparency = 1}, nil,TweenInfo.new(0.6, Enum.EasingStyle.Exponential))
+                    tween(KeySystem, {BackgroundTransparency = 1}, nil, TweenInfo.new(0.6, Enum.EasingStyle.Exponential))
                     task.wait(0.51)
                     Passthrough = true
                     KeySystem.Visible = false
@@ -2408,7 +2408,11 @@ function Luna:CreateWindow(WindowSettings)
                         if writefile then
                             writefile(direc .. WindowSettings.KeySettings.FileName .. ".luna", inputKey)
                         end
-                        Luna:Notification({Title = "Key System", Content = "The key for this script has been saved successfully.", Icon = "lock_open"})
+                        Luna:Notification({
+                            Title = "Key System",
+                            Content = "The key for this script has been saved successfully.",
+                            Icon = "lock_open"
+                        })
                     end
                 else
                     if AttemptsRemaining == 0 then
@@ -2422,12 +2426,11 @@ function Luna:CreateWindow(WindowSettings)
                 end
             end)
 
-			KeySystem.Close.MouseButton1Click:Connect(function()
-				
-				Luna:Destroy()
-			end)
-		end
-	end
+            KeySystem.Close.MouseButton1Click:Connect(function()
+                Luna:Destroy()
+            end)
+        end
+    end
 
 	if WindowSettings.KeySystem then
 		repeat task.wait() until Passthrough
