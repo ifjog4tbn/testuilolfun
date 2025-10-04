@@ -2370,68 +2370,118 @@ function Luna:CreateWindow(WindowSettings)
 				end
 			end)
 
-            local function ValidateKey(userKey)
-                if not userKey or tostring(userKey) == "" then
-                    return "invalid"
-                end
+local function ValidateKey(userKey)
+    if not userKey or tostring(userKey) == "" then
+        warn("Validation failed: Empty or nil key")
+        return "invalid"
+    end
 
-                local apiKey = HttpService:UrlEncode(tostring(_G.JunkieProtected.API_KEY or ""))
-                local fetchParam = HttpService:UrlEncode(tostring(userKey))
-                local fetchUrl = ("https://junkie-development.de/api/fetch/key?apiKey=%s&fetch=%s"):format(apiKey, fetchParam)
+    local HttpService = game:GetService("HttpService")
+    local LocalPlayer = game.Players.LocalPlayer
+    local apiKey = HttpService:UrlEncode(tostring(_G.JunkieProtected.API_KEY or ""))
+    local fetchParam = HttpService:UrlEncode(tostring(userKey))
+    local fetchUrl = ("https://junkie-development.de/api/fetch/key?apiKey=%s&fetch=%s"):format(apiKey, fetchParam)
 
-                local ok, resp = pcall(function() return game:HttpGet(fetchUrl, true) end)
-                if ok and resp then
-                    local ok2, data = pcall(function() return HttpService:JSONDecode(resp) end)
-                    if ok2 and type(data) == "table" then
-                        if data.key and type(data.key) == "table" then
-                            local keyObj = data.key
-                            if tostring(keyObj.value) == tostring(userKey) then
-                                if keyObj.expiresAt and tostring(keyObj.expiresAt) ~= "" then
-                                    local ok3, dt = pcall(function() return DateTime.fromIsoDate(keyObj.expiresAt) end)
-                                    if ok3 and dt then
-                                        local now = DateTime.now():ToUniversalTime()
-                                        local exp = dt:ToUniversalTime()
-                                        if exp.UnixTimestamp < now.UnixTimestamp then
-                                            return "invalid"
-                                        end
-                                    end
-                                end
-                                if keyObj.noHwidValidation == true or tostring(keyObj.noHwidValidation) == "true" then
-                                    return "valid"
-                                end
-                                if keyObj.hwid and tostring(keyObj.hwid) ~= "" then
-                                    if tostring(keyObj.hwid) == tostring(LocalPlayer.UserId) then
-                                        return "valid"
-                                    else
-                                        return "invalid"
-                                    end
-                                end
-                                return "valid"
+    -- Log the URL for debugging
+    print("Fetching key from:", fetchUrl)
+
+    local ok, resp = pcall(function()
+        return game:HttpGet(fetchUrl, true)
+    end)
+
+    if not ok then
+        warn("Fetch request failed:", resp)
+        -- Fallback to validate endpoint
+    elseif resp then
+        print("Fetch response:", resp)
+        local ok2, data = pcall(function()
+            return HttpService:JSONDecode(resp)
+        end)
+        if not ok2 then
+            warn("JSON decode failed for fetch:", data)
+        elseif type(data) == "table" then
+            print("Parsed fetch data:", HttpService:JSONEncode(data))
+            if data.key and type(data.key) == "table" then
+                local keyObj = data.key
+                if tostring(keyObj.value) == tostring(userKey) then
+                    if keyObj.expiresAt and tostring(keyObj.expiresAt) ~= "" then
+                        local ok3, dt = pcall(function()
+                            return DateTime.fromIsoDate(keyObj.expiresAt)
+                        end)
+                        if not ok3 then
+                            warn("DateTime parsing failed:", dt, "ExpiresAt:", keyObj.expiresAt)
+                        elseif dt then
+                            local now = DateTime.now():ToUniversalTime()
+                            local exp = dt:ToUniversalTime()
+                            if exp.UnixTimestamp < now.UnixTimestamp then
+                                warn("Key expired: ExpiresAt =", keyObj.expiresAt)
+                                return "invalid"
                             end
                         end
-                        if data.status == "valid" or data.result == "valid" or data.valid == true then
+                    end
+                    if keyObj.noHwidValidation == true or tostring(keyObj.noHwidValidation) == "true" then
+                        print("Key valid (no HWID validation)")
+                        return "valid"
+                    end
+                    if keyObj.hwid and tostring(keyObj.hwid) ~= "" then
+                        if tostring(keyObj.hwid) == tostring(LocalPlayer.UserId) then
+                            print("Key valid (HWID matched)")
                             return "valid"
+                        else
+                            warn("HWID mismatch: Expected =", keyObj.hwid, "Got =", LocalPlayer.UserId)
+                            return "invalid"
                         end
                     end
+                    print("Key valid (no HWID required)")
+                    return "valid"
+                else
+                    warn("Key value mismatch: Expected =", userKey, "Got =", keyObj.value)
                 end
-
-                local altUrl = ("https://junkie-development.de/api/validate?apiKey=%s&key=%s&service=%s"):format(
-                    apiKey,
-                    HttpService:UrlEncode(tostring(userKey)),
-                    HttpService:UrlEncode(tostring(Config.service or ""))
-                )
-                local okAlt, respAlt = pcall(function() return game:HttpGet(altUrl, true) end)
-                if okAlt and respAlt then
-                    local ok4, d4 = pcall(function() return HttpService:JSONDecode(respAlt) end)
-                    if ok4 and type(d4) == "table" then
-                        if d4.status == "valid" or d4.result == "valid" or d4.valid == true then
-                            return "valid"
-                        end
-                    end
-                end
-
-                return "invalid"
+            elseif data.status == "valid" or data.result == "valid" or data.valid == true then
+                print("Key valid (status check)")
+                return "valid"
+            else
+                warn("Fetch response invalid:", HttpService:JSONEncode(data))
             end
+        end
+    end
+
+    -- Fallback to validate endpoint
+    local altUrl = ("https://junkie-development.de/api/validate?apiKey=%s&key=%s&service=%s"):format(
+        apiKey,
+        HttpService:UrlEncode(tostring(userKey)),
+        HttpService:UrlEncode(tostring(Config.service or ""))
+    )
+    print("Falling back to validate URL:", altUrl)
+
+    local okAlt, respAlt = pcall(function()
+        return game:HttpGet(altUrl, true)
+    end)
+
+    if not okAlt then
+        warn("Validate request failed:", respAlt)
+        return "invalid"
+    elseif respAlt then
+        print("Validate response:", respAlt)
+        local ok4, d4 = pcall(function()
+            return HttpService:JSONDecode(respAlt)
+        end)
+        if not ok4 then
+            warn("JSON decode failed for validate:", d4)
+        elseif type(d4) == "table" then
+            print("Parsed validate data:", HttpService:JSONEncode(d4))
+            if d4.status == "valid" or d4.result == "valid" or d4.valid == true then
+                print("Key valid (validate endpoint)")
+                return "valid"
+            else
+                warn("Validate response invalid:", HttpService:JSONEncode(d4))
+            end
+        end
+    end
+
+    warn("Validation failed: No valid response from either endpoint")
+    return "invalid"
+end
 
             KeySystem.Action.Submit.Interact.MouseButton1Click:Connect(function()
                 if #KeySystem.Input.InputBox.Text == 0 then return end
