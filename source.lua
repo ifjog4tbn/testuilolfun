@@ -2370,56 +2370,57 @@ function Luna:CreateWindow(WindowSettings)
 				end
 			end)
 
-			KeySystem.Action.Submit.Interact.MouseButton1Click:Connect(function()
-				if #KeySystem.Input.InputBox.Text == 0 then return end
-				local KeyFound = false
-				local FoundKey = ''
-				for _, Key in ipairs(WindowSettings.KeySettings.Key) do
-					if KeySystem.Input.InputBox.Text == Key then
-						KeyFound = true
-						FoundKey = Key
-						break
-					end
-				end
-				if KeyFound then 
-					for _, instance in pairs(KeySystem:GetDescendants()) do
-						if instance.ClassName ~= "UICorner" and instance.ClassName ~= "UIPadding" then
-							if instance.ClassName ~= "UIStroke" and instance.ClassName ~= "UIListLayout" then
-								tween(instance, {BackgroundTransparency = 1}, nil,TweenInfo.new(0.6, Enum.EasingStyle.Exponential))
-							end
-							if instance.ClassName == "ImageButton" then
-								tween(instance, {ImageTransparency = 1}, nil,TweenInfo.new(0.5, Enum.EasingStyle.Exponential))
-							end
-							if instance.ClassName == "TextLabel" then
-								tween(instance, {TextTransparency = 1}, nil,TweenInfo.new(0.4, Enum.EasingStyle.Exponential))
-							end
-							if instance.ClassName == "UIStroke" then
-								tween(instance, {Transparency = 1}, nil,TweenInfo.new(0.5, Enum.EasingStyle.Exponential))
-							end
-						end
-					end
-					tween(KeySystem, {BackgroundTransparency = 1}, nil,TweenInfo.new(0.6, Enum.EasingStyle.Exponential))
-					task.wait(0.51)
-					Passthrough = true
-					KeySystem.Visible = false
-					if WindowSettings.KeySettings.SaveKey then
-						if writefile then
-							writefile(direc .. WindowSettings.KeySettings.FileName .. ".luna", FoundKey)
-						end
-						Luna:Notification({Title = "Key System", Content = "The key for this script has been saved successfully.", Icon = "lock_open"})
-					end
-				else
-					if AttemptsRemaining == 0 then
+            KeySystem.Action.Submit.Interact.MouseButton1Click:Connect(function()
+                if #KeySystem.Input.InputBox.Text == 0 then return end
+                local inputKey = KeySystem.Input.InputBox.Text
+                local KeyValid = false
 
-						game.Players.LocalPlayer:Kick("No Attempts Remaining")
-						game:Shutdown()
-					end
-					KeySystem.Input.InputBox.Text = "Incorrect Key"
-					AttemptsRemaining = AttemptsRemaining - 1
-					task.wait(0.4)
-					KeySystem.Input.InputBox.Text = ""
-				end
-			end)
+                local ok, result = pcall(function()
+                    return _G.JunkieProtected.ValidateKey({ Key = inputKey })
+                end)
+
+                if ok and result == "valid" then
+                    KeyValid = true
+                end
+
+                if KeyValid then
+                    for _, instance in pairs(KeySystem:GetDescendants()) do
+                        if instance.ClassName ~= "UICorner" and instance.ClassName ~= "UIPadding" then
+                            if instance.ClassName ~= "UIStroke" and instance.ClassName ~= "UIListLayout" then
+                                tween(instance, {BackgroundTransparency = 1}, nil,TweenInfo.new(0.6, Enum.EasingStyle.Exponential))
+                            end
+                            if instance.ClassName == "ImageButton" then
+                                tween(instance, {ImageTransparency = 1}, nil,TweenInfo.new(0.5, Enum.EasingStyle.Exponential))
+                            end
+                            if instance.ClassName == "TextLabel" then
+                                tween(instance, {TextTransparency = 1}, nil,TweenInfo.new(0.4, Enum.EasingStyle.Exponential))
+                            end
+                            if instance.ClassName == "UIStroke" then
+                                tween(instance, {Transparency = 1}, nil,TweenInfo.new(0.5, Enum.EasingStyle.Exponential))
+                            end
+                        end
+                    end
+                    tween(KeySystem, {BackgroundTransparency = 1}, nil,TweenInfo.new(0.6, Enum.EasingStyle.Exponential))
+                    task.wait(0.51)
+                    Passthrough = true
+                    KeySystem.Visible = false
+                    if WindowSettings.KeySettings.SaveKey then
+                        if writefile then
+                            writefile(direc .. WindowSettings.KeySettings.FileName .. ".luna", inputKey)
+                        end
+                        Luna:Notification({Title = "Key System", Content = "The key for this script has been saved successfully.", Icon = "lock_open"})
+                    end
+                else
+                    if AttemptsRemaining == 0 then
+                        game.Players.LocalPlayer:Kick("No Attempts Remaining")
+                        game:Shutdown()
+                    end
+                    KeySystem.Input.InputBox.Text = "Incorrect Key"
+                    AttemptsRemaining = AttemptsRemaining - 1
+                    task.wait(0.4)
+                    KeySystem.Input.InputBox.Text = ""
+                end
+            end)
 
 			KeySystem.Close.MouseButton1Click:Connect(function()
 				
