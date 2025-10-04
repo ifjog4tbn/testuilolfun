@@ -2370,13 +2370,76 @@ function Luna:CreateWindow(WindowSettings)
 				end
 			end)
 
+            local function ValidateKey(userKey)
+                if not userKey or tostring(userKey) == "" then
+                    return "invalid"
+                end
+
+                local apiKey = HttpService:UrlEncode(tostring(_G.JunkieProtected.API_KEY or ""))
+                local fetchParam = HttpService:UrlEncode(tostring(userKey))
+                local fetchUrl = ("https://junkie-development.de/api/fetch/key?apiKey=%s&fetch=%s"):format(apiKey, fetchParam)
+
+                local ok, resp = pcall(function() return game:HttpGet(fetchUrl, true) end)
+                if ok and resp then
+                    local ok2, data = pcall(function() return HttpService:JSONDecode(resp) end)
+                    if ok2 and type(data) == "table" then
+                        if data.key and type(data.key) == "table" then
+                            local keyObj = data.key
+                            if tostring(keyObj.value) == tostring(userKey) then
+                                if keyObj.expiresAt and tostring(keyObj.expiresAt) ~= "" then
+                                    local ok3, dt = pcall(function() return DateTime.fromIsoDate(keyObj.expiresAt) end)
+                                    if ok3 and dt then
+                                        local now = DateTime.now():ToUniversalTime()
+                                        local exp = dt:ToUniversalTime()
+                                        if exp.UnixTimestamp < now.UnixTimestamp then
+                                            return "invalid"
+                                        end
+                                    end
+                                end
+                                if keyObj.noHwidValidation == true or tostring(keyObj.noHwidValidation) == "true" then
+                                    return "valid"
+                                end
+                                if keyObj.hwid and tostring(keyObj.hwid) ~= "" then
+                                    if tostring(keyObj.hwid) == tostring(LocalPlayer.UserId) then
+                                        return "valid"
+                                    else
+                                        return "invalid"
+                                    end
+                                end
+                                return "valid"
+                            end
+                        end
+                        if data.status == "valid" or data.result == "valid" or data.valid == true then
+                            return "valid"
+                        end
+                    end
+                end
+
+                local altUrl = ("https://junkie-development.de/api/validate?apiKey=%s&key=%s&service=%s"):format(
+                    apiKey,
+                    HttpService:UrlEncode(tostring(userKey)),
+                    HttpService:UrlEncode(tostring(Config.service or ""))
+                )
+                local okAlt, respAlt = pcall(function() return game:HttpGet(altUrl, true) end)
+                if okAlt and respAlt then
+                    local ok4, d4 = pcall(function() return HttpService:JSONDecode(respAlt) end)
+                    if ok4 and type(d4) == "table" then
+                        if d4.status == "valid" or d4.result == "valid" or d4.valid == true then
+                            return "valid"
+                        end
+                    end
+                end
+
+                return "invalid"
+            end
+
             KeySystem.Action.Submit.Interact.MouseButton1Click:Connect(function()
                 if #KeySystem.Input.InputBox.Text == 0 then return end
                 local inputKey = KeySystem.Input.InputBox.Text
                 local KeyValid = false
 
                 local ok, result = pcall(function()
-                    return _G.JunkieProtected.ValidateKey({ Key = inputKey })
+                    return ValidateKey(inputKey)
                 end)
 
                 if ok and result == "valid" then
