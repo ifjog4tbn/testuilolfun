@@ -2596,7 +2596,7 @@ end
 
 		HomeTabSettings = Kwargify({
 			Icon = 1,
-			SupportedExecutors = {"Vega X", "Delta", "Nihon", "Xeno"}, -- THESE DEFAULTS ARE PLACEHOLDERS!! I DO NOT ADVERTISE THESE, THEY ARE JUS THE FIRST THAT CAME TO MIND. I HAVE NO IDEA WHETHER THEYA RE RATS (they prob are) AND IM NOT RESPONSIBLE IF U GET VIRUSES FROM INSTALLING AFTER SEEING THIS LIST
+			SupportedExecutors = {"Vega X", "Delta", "Nihon", "Xeno", "Volcano", "Swift"}, -- THESE DEFAULTS ARE PLACEHOLDERS!! I DO NOT ADVERTISE THESE, THEY ARE JUS THE FIRST THAT CAME TO MIND. I HAVE NO IDEA WHETHER THEYA RE RATS (they prob are) AND IM NOT RESPONSIBLE IF U GET VIRUSES FROM INSTALLING AFTER SEEING THIS LIST
 			DiscordInvite = "noinvitelink" -- The disvord invite link. Do not include the link so for example if my invite was discord.gg/nebula I would put nebula
 		}, HomeTabSettings or {})
 
@@ -2645,7 +2645,7 @@ end
 
 		HomeTabPage.detailsholder.dashboard.Client.Title.Text = (isStudio and "Debugging (Studio)" or identifyexecutor()) or "Your Executor Does Not Support identifyexecutor."
 		for i,v in pairs(HomeTabSettings.SupportedExecutors) do
-			if isStudio then HomeTabPage.detailsholder.dashboard.Client.Subtitle.Text = "Luna Interface Suite - Debugging Mode" break end
+			if isStudio then HomeTabPage.detailsholder.dashboard.Client.Subtitle.Text = "Argus Interface Suite - Debugging Mode" break end
 			if v == identifyexecutor() then
 				HomeTabPage.detailsholder.dashboard.Client.Subtitle.Text = "Your Executor Supports This Script."
 				break
